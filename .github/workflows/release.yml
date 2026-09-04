@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0-full
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install make, zip and Liberation fonts
+        run: apt-get update && apt-get install -y --no-install-recommends make zip fonts-liberation
+      - name: Stamp git revision into the design
+        run: scripts/stamp.sh "$GITHUB_SHA" "$GITHUB_REF_NAME"
+      - name: ERC + DRC
+        run: make -k check
+      - name: Generate outputs
+        run: make fab
+      - name: Stamp the tag into the file names
+        run: |
+          mkdir release-assets
+          for f in Fabrication/JLCPCB/* Fabrication/PDFs/* Fabrication/pcb_images/*; do
+            b=$(basename "$f")
+            cp "$f" "release-assets/wch-probe-$GITHUB_REF_NAME-${b#wch-probe-}"
+          done
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/*
+          fail_on_unmatched_files: true
+          generate_release_notes: true

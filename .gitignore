@@ -1,0 +1,46 @@
+# Build outputs
+target/
+result
+result-*
+.direnv/
+
+# Temporary files
+*.000
+*.bak
+*-bak
+*.bck
+*~
+*.lck
+*.tmp
+_autosave-*
+\#auto_saved_files#
+
+# Netlist files (exported from Eeschema)
+*.net
+
+# Autorouter files (exported from Pcbnew)
+*.dsn
+*.ses
+
+# Folders
+gerbers/
+*-backups/
+
+# CI fabrication / diff outputs
+Fabrication/
+diff-*
+kirin-out/
+
+# Generated files
+*.pdf
+*.rpt
+*-erc.json
+*-drc.json
+fp-info-cache
+.typst-cache/
+
+# Local preference files
+*.kicad_prl
+
+# KiCAD automatic backups
+.history/

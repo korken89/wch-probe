@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  erc-drc:
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0-full
+      # apt-get in the setup step needs root.
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install make and Liberation fonts
+        # The boards use Liberation Sans; without it KiCad falls back to the
+        # Newstroke stroke font and text sizing (courtyard/silk DRC) shifts.
+        run: apt-get update && apt-get install -y --no-install-recommends make fonts-liberation
+      - name: ERC + DRC
+        run: make -k check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: erc-drc-reports
+          path: "*.rpt"
+
+  fabrication:
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0-full
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install make, zip and Liberation fonts
+        run: apt-get update && apt-get install -y --no-install-recommends make zip fonts-liberation
+      - name: Stamp git revision into the design
+        run: scripts/stamp.sh "$GITHUB_SHA" dev
+      - name: Generate outputs
+        run: make fab
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fabrication-outputs
+          path: Fabrication
