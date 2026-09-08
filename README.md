@@ -41,6 +41,26 @@ wch-cfg verify --serial <the printed serial> --product wch-probe --manufacturer 
 
 `write` prints the serial for the label on stdout once the OS has enumerated it.
 
+## Gotchas
+
+**Several probes behind one hub can fail to enumerate.** The CH347 declares
+its interrupt endpoints with 125/250 us polling, and the host controller
+reserves that bandwidth at enumeration whether the endpoints are used or not.
+On Intel xHCs roughly three probes fill a root port's periodic budget, so
+further ones fail with `can't set config #1, error -28` ("Not enough
+bandwidth"). Work around it on Linux by treating the bInterval values as
+milliseconds (~8x smaller reservation; UART, JTAG and SWD run on bulk
+endpoints and are unaffected):
+
+```sh
+echo '1a86:55de:l' | sudo tee /sys/module/usbcore/parameters/quirks
+```
+
+then replug the probes (quirks apply at enumeration). To make it permanent,
+add `usbcore.quirks=1a86:55de:l` to the kernel command line. `dmesg` printing
+`endpoint 0x85 has an invalid bInterval 1, changing to 4` for each probe
+confirms the quirk is active.
+
 ## License
 
 CERN-OHL-P-2.0, see [LICENSE](LICENSE).
