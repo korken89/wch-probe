@@ -1,6 +1,6 @@
 # wch-probe
 
-KiCad hardware for a CH347F-based JTAG & SWD debug probe: USB-C on one end, a
+KiCad hardware for a CH347F-based JTAG & SWD debug probe. USB-C on one end, a
 10-pin 1.27 mm Cortex debug header on the other, plus a UART on the bottom-side
 TX/RX/GND pads. The I/O voltage (VIO) tracks the target's VTref (valid range
 1.8 V to 3.3 V), and defaults to 3.3 V when the target does not drive VTref.
@@ -25,7 +25,6 @@ JLCPCB, 4 layers, 1.6 mm thick. Order options:
 - Stackup: JLC04161H-7628 with impedance control (the USB pair is 90 ohm
   differential)
 - Surface finish: HASL lead-free
-- Remove order number: yes
 
 ## USB identity
 
@@ -43,14 +42,14 @@ wch-cfg verify --serial <the printed serial> --product wch-probe --manufacturer 
 
 ## Gotchas
 
-**Several probes behind one hub can fail to enumerate.** The CH347 declares
-its interrupt endpoints with 125/250 us polling, and the host controller
-reserves that bandwidth at enumeration whether the endpoints are used or not.
-On Intel xHCs roughly three probes fill a root port's periodic budget, so
-further ones fail with `can't set config #1, error -28` ("Not enough
-bandwidth"). Work around it on Linux by treating the bInterval values as
-milliseconds (~8x smaller reservation; UART, JTAG and SWD run on bulk
-endpoints and are unaffected):
+### Several probes behind one hub can fail to enumerate.
+
+The CH347 declares its interrupt endpoints with 125/250 us polling, and the
+host controller reserves that bandwidth at enumeration whether the endpoints
+are used or not. After a few probes it will error with `can't set config #1,
+error -28` ("Not enough bandwidth"). Work around it on Linux by treating
+the `bInterval` values as milliseconds (will support 8x more probes - UART,
+JTAG and SWD run on bulk endpoints and are unaffected):
 
 ```sh
 echo '1a86:55de:l' | sudo tee /sys/module/usbcore/parameters/quirks
