@@ -15,7 +15,7 @@ erc:
 	  -o $(PROJ)-erc.rpt $(PROJ).kicad_sch
 
 drc:
-	kicad-cli pcb drc --refill-zones --schematic-parity \
+	kicad-cli pcb drc --schematic-parity \
 	  --severity-error --exit-code-violations \
 	  -o $(PROJ)-drc.rpt $(PROJ).kicad_pcb
 
